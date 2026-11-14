@@ -15,3 +15,27 @@
 .register-link:hover {
   text-decoration: underline;
 }
+
+/* ===== Étape 6B : admin + élèves ===== */
+.field.big{min-height:300px;resize:vertical}
+.field.small{min-width:150px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.tab{background:var(--panel2);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:8px 15px;font-weight:700}
+.tab.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+.tag.ok{background:rgba(100,214,162,.15);color:var(--green)}
+.tag.warn{background:rgba(255,190,90,.14);color:#ffbe5a}
+.btn.danger{background:transparent;color:var(--red);border:1px solid rgba(255,119,139,.4)}
+.btn.danger:hover{background:rgba(255,119,139,.1)}
+details.item,details.newitem{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0}
+details.item>summary,details.newitem>summary{cursor:pointer;list-style:none}
+details[open]>summary{margin-bottom:10px}
+details .field{margin:6px 0;width:100%}
+details .row{margin-top:8px}
+.bar{height:12px;background:var(--panel2);border-radius:99px;overflow:hidden;margin:12px 0}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));transition:width .6s}
+.ok-box,.warn-box{padding:12px 14px;border-radius:12px;margin:12px 0}
+.ok-box{background:rgba(100,214,162,.12);color:var(--green)}
+.warn-box{background:rgba(255,190,90,.12);color:#ffbe5a}
+.error-list{color:var(--red);font-size:13px;padding-left:18px}
+.md h3,.md h4,.md h5{margin:20px 0 8px}.md p{margin:8px 0;line-height:1.65}.md ul{padding-left:22px;line-height:1.65}
+.question.right{border-color:rgba(100,214,162,.5)}.question.wrong{border-color:rgba(255,119,139,.5)}
