@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11111b">
+<title>RéviSpace — Apprendre autrement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<section id="loginView" class="login-wrap">
+  <div class="login-art">
+    <div class="brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
+    <div class="hero-copy">
+      <span class="eyebrow">TON ESPACE DE RÉVISION</span>
+      <h1>Apprends mieux.<br><span>Progresse à ton rythme.</span></h1>
+      <p>Retrouve tes cours, entraîne-toi avec des quiz et transforme tes révisions en réussite.</p>
+      <div class="hero-pills"><span>✦ Quiz personnalisés</span><span>✦ Flashcards</span><span>✦ Suivi des points</span></div>
+    </div>
+    <div class="orb orb-one"></div><div class="orb orb-two"></div>
+    <div class="login-foot">© 2026 RéviSpace · Un espace pour progresser</div>
+  </div>
+  <div class="login-panel">
+    <form id="loginForm" class="login-card">
+      <div class="mobile-brand brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
+      <span class="eyebrow">BON RETOUR</span>
+      <h2>Content de te revoir !</h2>
+      <p class="muted">Connecte-toi pour retrouver ton espace de travail.</p>
+      <label for="username">Pseudo</label><input id="username" autocomplete="username" maxlength="32" placeholder="Ton pseudo" required>
+      <label for="password">Mot de passe</label><input id="password" type="password" autocomplete="current-password" placeholder="Ton mot de passe" required>
+      <button class="btn primary full" type="submit">Se connecter <span>→</span></button>
+      <p id="loginError" class="error"></p>
+      <p class="tiny muted center">Accès réservé aux comptes créés par l'administration.</p>
+    </form>
+  </div>
+</section>
+
+<div id="appView" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand side-brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
+    <div class="side-label">ESPACE</div>
+    <nav id="studentNav">
+      <button class="nav active" data-page="home"><span>⌂</span> Vue d'ensemble</button>
+      <button class="nav" data-page="subjects"><span>▦</span> Mes matières</button>
+      <button class="nav" data-page="points"><span>✧</span> Mes points</button>
+    </nav>
+    <div id="adminNav" class="hidden">
+      <div class="side-label">ADMINISTRATION</div>
+      <button class="nav" data-page="admin"><span>◈</span> Tableau admin</button>
+      <button class="nav" data-page="manage"><span>＋</span> Contenus</button>
+      <button class="nav" data-page="users"><span>♙</span> Utilisateurs</button>
+      <button class="nav" data-page="ai"><span>✦</span> Assistant Grok</button>
+      <button class="nav" data-page="logs"><span>≡</span> Journal admin</button>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="profile-mini"><div class="avatar" id="avatar">R</div><div><b id="sideUsername">Utilisateur</b><small id="sideRole">Élève</small></div></div>
+      <button id="logoutBtn" class="logout">↪ Déconnexion</button>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div><span class="eyebrow" id="dateLabel">TON ESPACE</span><h2 id="pageTitle">Vue d'ensemble</h2></div><div class="top-user"><span class="status-dot"></span><span id="topUsername"></span></div></header>
+    <div id="pageContent" class="content"></div>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
