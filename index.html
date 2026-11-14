@@ -34,7 +34,23 @@
       <label for="password">Mot de passe</label><input id="password" type="password" autocomplete="current-password" placeholder="Ton mot de passe" required>
       <button class="btn primary full" type="submit">Se connecter <span>→</span></button>
       <p id="loginError" class="error"></p>
-      <p class="tiny muted center">Accès réservé aux comptes créés par l'administration.</p>
+      <p class="tiny muted center">Pas encore de compte ? <button type="button" id="showRegister" class="register-link">Créer un compte</button></p>
+    </form>
+
+    <form id="registerForm" class="login-card hidden">
+      <div class="mobile-brand brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
+      <span class="eyebrow">BIENVENUE SUR RÉVISPACE</span>
+      <h2>Créer un compte</h2>
+      <p class="muted">Inscris-toi pour commencer tes révisions.</p>
+      <label for="registerUsername">Pseudo</label>
+      <input id="registerUsername" autocomplete="username" minlength="3" maxlength="32" placeholder="Ton pseudo" required>
+      <label for="registerPassword">Mot de passe</label>
+      <input id="registerPassword" type="password" autocomplete="new-password" minlength="12" maxlength="256" placeholder="12 caractères minimum" required>
+      <label for="registerConfirmation">Confirmer le mot de passe</label>
+      <input id="registerConfirmation" type="password" autocomplete="new-password" minlength="12" maxlength="256" placeholder="Répète ton mot de passe" required>
+      <button class="btn primary full" type="submit">Créer mon compte <span>→</span></button>
+      <p id="registerError" class="error"></p>
+      <p class="tiny muted center">Déjà inscrit ? <button type="button" id="showLogin" class="register-link">Se connecter</button></p>
     </form>
   </div>
 </section>

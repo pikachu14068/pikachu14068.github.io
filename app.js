@@ -40,6 +40,41 @@ $('#loginForm').addEventListener('submit',async e=>{
     token=data.token;sessionStorage.setItem('rv_token',token);currentUser=data.user;$('#password').value='';showApp();
   }catch(err){$('#loginError').textContent=err.message}
 });
+
+$('#showRegister').addEventListener('click',()=>{
+  $('#loginForm').classList.add('hidden');
+  $('#registerForm').classList.remove('hidden');
+  $('#registerError').textContent='';
+});
+
+$('#showLogin').addEventListener('click',()=>{
+  $('#registerForm').classList.add('hidden');
+  $('#loginForm').classList.remove('hidden');
+  $('#loginError').textContent='';
+});
+
+$('#registerForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  $('#registerError').textContent='';
+  const username=$('#registerUsername').value.trim();
+  const password=$('#registerPassword').value;
+  const confirmation=$('#registerConfirmation').value;
+
+  try{
+    const data=await api('/api/auth/register',{
+      method:'POST',
+      body:JSON.stringify({username,password,confirmation})
+    });
+    token=data.token;
+    sessionStorage.setItem('rv_token',token);
+    currentUser=data.user;
+    $('#registerPassword').value='';
+    $('#registerConfirmation').value='';
+    showApp();
+  }catch(err){
+    $('#registerError').textContent=err.message;
+  }
+});
 $('#logoutBtn').addEventListener('click',()=>logout());
 
 function navigate(page){
