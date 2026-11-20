@@ -668,3 +668,28 @@ details.item>summary, details.newitem>summary { cursor: pointer; list-style: non
   border: 1px solid rgba(139,92,246,0.3); box-shadow: 0 18px 40px rgba(0,0,0,0.35); color: #f8fafc;
 }
 .flashcard-back, .card-face.back { transform: rotateY(180deg); background: linear-gradient(145deg, #231e3d, #19162e); border-color: rgba(99,102,241,0.55); }
+
+/* === PATCH QUIZ & FLASHCARDS === */
+.chapter-badge, .badge { margin-left: 10px; padding: 4px 12px; border-radius: 999px; background: rgba(124,92,255,0.18); color: #a78bfa; font-size: 0.78rem; }
+.quiz-question, .question-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 18px; }
+.quiz-options, .options-grid, .choices, .quiz-question > div { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 14px; }
+.quiz-options button, .options-grid button, .choices button, .quiz-question button {
+  appearance: none; -webkit-appearance: none; width: 100%; text-align: left;
+  padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14);
+  background: #1e1e2e; color: #f1f5f9; font-family: inherit; font-size: 0.95rem; font-weight: 500;
+  cursor: pointer; transition: all 0.18s ease;
+}
+.quiz-options button:hover, .quiz-question button:hover { border-color: #818cf8; background: #27273a; transform: translateY(-2px); }
+.quiz-options button.selected, .quiz-question button.selected, .quiz-question button[aria-pressed="true"] {
+  background: rgba(99,102,241,0.25); border-color: #6366f1; color: #fff; font-weight: 600;
+}
+.flashcard-stage, .flashcard-container { perspective: 1200px; max-width: 620px; margin: 24px auto; }
+.flashcard, .card-flip { position: relative; width: 100%; min-height: 270px; transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.22,1,0.36,1); cursor: pointer; }
+.flashcard.flipped, .card-flip.flipped, .flashcard.is-flipped { transform: rotateY(180deg); }
+.flashcard-front, .flashcard-back, .card-face {
+  position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  padding: 28px; border-radius: 20px; background: linear-gradient(145deg, #1e1e2f, #171726);
+  border: 1px solid rgba(139,92,246,0.3); box-shadow: 0 18px 40px rgba(0,0,0,0.35); color: #f8fafc;
+}
+.flashcard-back, .card-face.back { transform: rotateY(180deg); background: linear-gradient(145deg, #231e3d, #19162e); border-color: rgba(99,102,241,0.55); }
