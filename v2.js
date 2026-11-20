@@ -59,10 +59,11 @@
       if (!r.ok) return;
 
       const data = await r.json();
-      const build = data.build_id || data.frontend_version;
+      const frontendVersion = data.frontend_version || data.backend_version;
+      const build = data.build_id || frontendVersion;
       const current = window.REVISPACE_BUILD || '2.0.0';
 
-      if (!build || build === current || build === dismissedBuild) return;
+      if (!frontendVersion || frontendVersion === current || build === dismissedBuild) return;
 
       const el = document.getElementById('updateBanner');
       if (!el) return;
