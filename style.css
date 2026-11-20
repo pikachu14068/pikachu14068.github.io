@@ -481,3 +481,165 @@ details.item>summary, details.newitem>summary { cursor: pointer; list-style: non
   line-height: 1.3;
   overflow: visible;
 }
+
+/* ===== REFONTE COMPTES ET POINTS ===== */
+.users-intro {
+  margin-bottom: 24px;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(120deg, rgba(139,108,255,.16), rgba(139,108,255,.035));
+}
+.users-intro h2 { margin: 8px 0; font-family: var(--font-display); }
+.users-intro p { margin: 0; color: var(--muted); }
+
+.users-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 24px;
+}
+.users-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--panel);
+}
+.users-stat-icon, .users-create-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: rgba(139,108,255,.15);
+  color: var(--purple);
+  font-size: 21px;
+}
+.users-stat-card div { display: grid; gap: 4px; }
+.users-stat-card small { color: var(--muted); }
+.users-stat-card strong { font-size: 25px; font-family: var(--font-display); }
+
+.users-create-card { padding: 24px; margin-bottom: 30px; }
+.users-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+.users-card-heading h3 { margin: 6px 0; font-family: var(--font-display); }
+.users-card-heading p { margin: 0; }
+.users-create-icon { width: 48px; height: 48px; font-size: 26px; }
+.users-create-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+.users-create-form label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+.users-create-form .field { width: 100%; min-width: 0; box-sizing: border-box; }
+.users-create-form button { min-height: 44px; }
+
+.users-list-heading { margin-top: 30px; margin-bottom: 14px; }
+.users-list-heading h3 { margin: 5px 0 0; }
+.users-table-wrap { border: 1px solid var(--line); border-radius: 17px; }
+.users-table { min-width: 850px; }
+.users-table th { padding: 16px; }
+.users-table td { padding: 16px; vertical-align: middle; }
+.user-table-name { font-weight: 700; }
+.user-role, .user-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.user-role.admin { color: #c5aaff; background: rgba(139,108,255,.16); }
+.user-role.student { color: var(--muted); background: rgba(150,150,170,.12); }
+.user-status.active { color: var(--green); background: rgba(100,214,162,.13); }
+.user-status.inactive { color: var(--orange); background: rgba(255,190,90,.13); }
+.user-points { color: var(--purple); white-space: nowrap; }
+.user-last-seen { color: var(--muted); font-size: 12px; }
+.user-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.user-actions .btn { white-space: nowrap; }
+
+.points-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 30px;
+  margin-bottom: 30px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(120deg, rgba(139,108,255,.2), rgba(139,108,255,.035));
+}
+.points-hero-info h2 {
+  margin: 10px 0;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, 30px);
+}
+.points-hero-info p { margin: 0; color: var(--muted); }
+.points-total {
+  min-width: 190px;
+  padding: 20px;
+  border: 1px solid rgba(139,108,255,.25);
+  border-radius: 17px;
+  background: rgba(139,108,255,.12);
+  display: grid;
+  gap: 5px;
+}
+.points-total span, .points-total small { color: var(--muted); font-size: 11px; }
+.points-total strong { color: var(--purple); font-size: 30px; font-family: var(--font-display); }
+.points-section-head { margin-bottom: 15px; }
+.points-section-head h3 { margin: 5px 0 0; }
+.points-history {
+  display: grid;
+  gap: 10px;
+}
+.points-history-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 19px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--panel);
+}
+.points-history-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  background: rgba(139,108,255,.14);
+  color: var(--purple);
+  font-size: 20px;
+}
+.points-history-info { display: grid; gap: 5px; min-width: 0; flex: 1; }
+.points-history-info strong { overflow-wrap: anywhere; }
+.points-history-info small { color: var(--muted); font-size: 12px; }
+.points-change { font-size: 17px; font-weight: 800; white-space: nowrap; }
+.points-change.positive { color: var(--green); }
+.points-change.negative { color: var(--orange); }
+
+@media (max-width: 760px) {
+  .users-stats { grid-template-columns: 1fr; }
+  .users-create-form { grid-template-columns: 1fr; }
+  .points-hero { align-items: stretch; flex-direction: column; padding: 22px; }
+  .points-total { min-width: 0; }
+  .users-create-card { padding: 18px; }
+  .points-history-item { padding: 13px; }
+}

@@ -159,8 +159,53 @@ function renderFlashcard(){
 }
 function flipCard(){flashBack=!flashBack;renderFlashcard()}function nextCard(){flashIndex=(flashIndex+1)%flashItems.length;flashBack=false;renderFlashcard()}function prevCard(){flashIndex=(flashIndex-1+flashItems.length)%flashItems.length;flashBack=false;renderFlashcard()}
 async function renderPoints(){
-  const c=$('#pageContent');try{const d=await api('/api/points/history');c.innerHTML=`<div class="welcome"><span class="eyebrow">TA PROGRESSION</span><h2>✧ ${currentUser.points} points</h2><p>Chaque bonne réponse te fait progresser.</p></div><div class="section-head"><h3>Historique des points</h3></div>`+
-  (d.history.length?`<div class="table-wrap"><table><thead><tr><th>Motif</th><th>Points</th><th>Date</th></tr></thead><tbody>${d.history.map(x=>`<tr><td>${escapeHtml(x.reason)}</td><td>${x.amount>0?'+':''}${x.amount}</td><td>${new Date(x.created_at).toLocaleString('fr-FR')}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Pas encore d’historique.</div>')}catch(e){c.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`}
+  const c = $('#pageContent');
+  try {
+    const d = await api('/api/points/history');
+    const total = Number(currentUser.points) || 0;
+
+    c.innerHTML = `
+      <section class="points-hero">
+        <div class="points-hero-info">
+          <span class="eyebrow">TA PROGRESSION</span>
+          <h2>Continue sur ta lancée !</h2>
+          <p>Chaque révision te rapproche de tes objectifs.</p>
+        </div>
+        <div class="points-total">
+          <span>TON TOTAL</span>
+          <strong>✧ ${total.toLocaleString('fr-FR')}</strong>
+          <small>points accumulés</small>
+        </div>
+      </section>
+
+      <div class="section-head points-section-head">
+        <div>
+          <span class="eyebrow">TES ACTIVITÉS</span>
+          <h3>Historique des points</h3>
+        </div>
+        <span class="tag">${d.history.length} opération(s)</span>
+      </div>
+
+      ${d.history.length ? `
+        <div class="points-history">
+          ${d.history.map(x => `
+            <article class="points-history-item">
+              <div class="points-history-icon">${Number(x.amount) >= 0 ? '✦' : '↘'}</div>
+              <div class="points-history-info">
+                <strong>${escapeHtml(x.reason)}</strong>
+                <small>${new Date(x.created_at).toLocaleString('fr-FR')}</small>
+              </div>
+              <span class="points-change ${Number(x.amount) >= 0 ? 'positive' : 'negative'}">
+                ${Number(x.amount) > 0 ? '+' : ''}${x.amount}
+              </span>
+            </article>
+          `).join('')}
+        </div>
+      ` : '<div class="empty">✧ Pas encore d’historique. Tes prochains points apparaîtront ici !</div>'}
+    `;
+  } catch(e) {
+    c.innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
+  }
 }
 async function renderAdmin(){
   const c=$('#pageContent');try{const d=await api('/api/admin/overview');c.innerHTML=`<div class="welcome"><span class="eyebrow">ESPACE ADMINISTRATEUR</span><h2>Centre de contrôle</h2><p>Gère les contenus et accompagne les élèves depuis un seul endroit.</p></div><div class="stats"><div class="stat"><small>Utilisateurs</small><strong>${d.users}</strong></div><div class="stat"><small>Matières</small><strong>${d.subjects}</strong></div><div class="stat"><small>Questions</small><strong>${d.questions}</strong></div><div class="stat"><small>En ligne récemment</small><strong>${d.online}</strong></div></div><div class="grid"><div class="card"><h3>📚 Contenus</h3><p class="muted">Ajoute matières, chapitres, cours et exercices.</p><button class="btn secondary" onclick="navigate('manage')">Gérer les contenus</button></div><div class="card"><h3>♙ Utilisateurs</h3><p class="muted">Crée des comptes et ajuste les points.</p><button class="btn secondary" onclick="navigate('users')">Gérer les comptes</button></div><div class="card"><h3>✦ Assistant Groq</h3><p class="muted">Génère des brouillons de quiz et flashcards.</p><button class="btn secondary" onclick="navigate('ai')">Ouvrir l’assistant</button></div></div>`}catch(e){c.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`}
@@ -183,10 +228,119 @@ async function renderManage(){
   }catch(e){c.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`}
 }
 async function renderUsers(){
-  const c=$('#pageContent');try{const d=await api('/api/admin/users');
-    c.innerHTML=`<div class="card"><h3>Créer un compte</h3><form id="newUser" class="row"><input class="field small" name="username" placeholder="Pseudo" required><input class="field small" name="password" type="password" minlength="12" placeholder="Mot de passe (12+)" required><select class="field small" name="role"><option value="student">Élève</option><option value="admin">Administrateur</option></select><button class="btn primary">Créer</button></form></div><div class="section-head"><h3>Comptes existants</h3><span class="tag">${d.users.length} compte(s)</span></div><div class="table-wrap"><table><thead><tr><th>Pseudo</th><th>Rôle</th><th>Points</th><th>Statut</th><th>Dernière activité</th><th>Actions</th></tr></thead><tbody>${d.users.map(u=>`<tr><td>${escapeHtml(u.username)}</td><td>${u.role}</td><td>${u.points}</td><td>${u.is_active?'Actif':'Désactivé'}</td><td>${u.last_seen?new Date(u.last_seen).toLocaleString('fr-FR'):'—'}</td><td><button class="btn secondary" onclick="changePoints(${u.id})">Points ±</button> <button class="btn secondary" onclick="toggleUser(${u.id},${!u.is_active})">${u.is_active?'Désactiver':'Activer'}</button></td></tr>`).join('')}</tbody></table></div>`;
-    $('#newUser').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);try{await api('/api/admin/users',{method:'POST',body:JSON.stringify(Object.fromEntries(f))});toast('Compte créé');renderUsers()}catch(err){toast(err.message)}};
-  }catch(e){c.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`}
+  const c = $('#pageContent');
+  try {
+    const d = await api('/api/admin/users');
+    const activeUsers = d.users.filter(u => u.is_active).length;
+    const adminCount = d.users.filter(u => u.role === 'admin').length;
+
+    c.innerHTML = `
+      <section class="users-intro">
+        <span class="eyebrow">ADMINISTRATION</span>
+        <h2>Gestion des comptes</h2>
+        <p>Crée, consulte et gère les utilisateurs de RéviSpace.</p>
+      </section>
+
+      <div class="users-stats">
+        <article class="users-stat-card">
+          <span class="users-stat-icon">♙</span>
+          <div><small>Comptes créés</small><strong>${d.users.length}</strong></div>
+        </article>
+        <article class="users-stat-card">
+          <span class="users-stat-icon">✓</span>
+          <div><small>Comptes actifs</small><strong>${activeUsers}</strong></div>
+        </article>
+        <article class="users-stat-card">
+          <span class="users-stat-icon">★</span>
+          <div><small>Administrateurs</small><strong>${adminCount}</strong></div>
+        </article>
+      </div>
+
+      <section class="card users-create-card">
+        <div class="users-card-heading">
+          <div>
+            <span class="eyebrow">NOUVEL UTILISATEUR</span>
+            <h3>Créer un compte</h3>
+            <p class="muted">Renseigne les informations du nouvel utilisateur.</p>
+          </div>
+          <span class="users-create-icon">＋</span>
+        </div>
+
+        <form id="newUser" class="users-create-form">
+          <label>Nom d'utilisateur
+            <input class="field" name="username" placeholder="Ex. Alex" required>
+          </label>
+          <label>Mot de passe
+            <input class="field" name="password" type="password" minlength="12" placeholder="12 caractères minimum" required>
+          </label>
+          <label>Rôle
+            <select class="field" name="role">
+              <option value="student">Élève</option>
+              <option value="admin">Administrateur</option>
+            </select>
+          </label>
+          <button class="btn primary" type="submit">＋ Créer le compte</button>
+        </form>
+      </section>
+
+      <div class="section-head users-list-heading">
+        <div>
+          <span class="eyebrow">ESPACE MEMBRES</span>
+          <h3>Comptes existants</h3>
+        </div>
+        <span class="tag">${d.users.length} compte(s)</span>
+      </div>
+
+      <div class="table-wrap users-table-wrap">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Rôle</th>
+              <th>Points</th>
+              <th>Statut</th>
+              <th>Dernière activité</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${d.users.map(u => `
+              <tr>
+                <td><strong class="user-table-name">${escapeHtml(u.username)}</strong></td>
+                <td><span class="user-role ${u.role === 'admin' ? 'admin' : 'student'}">${u.role === 'admin' ? 'Administrateur' : 'Élève'}</span></td>
+                <td><strong class="user-points">✧ ${Number(u.points) || 0}</strong></td>
+                <td><span class="user-status ${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'Actif' : 'Désactivé'}</span></td>
+                <td class="user-last-seen">${u.last_seen ? new Date(u.last_seen).toLocaleString('fr-FR') : 'Jamais'}</td>
+                <td>
+                  <div class="user-actions">
+                    <button class="btn secondary" onclick="changePoints(${u.id})">Points ±</button>
+                    <button class="btn secondary" onclick="toggleUser(${u.id},${!u.is_active})">${u.is_active ? 'Désactiver' : 'Activer'}</button>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    $('#newUser').onsubmit = async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      try {
+        await api('/api/admin/users', {
+          method: 'POST',
+          body: JSON.stringify(Object.fromEntries(f))
+        });
+        toast('Compte créé');
+        renderUsers();
+      } catch(err) {
+        toast(err.message);
+      }
+    };
+  } catch(e) {
+    c.innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
+  }
 }
 async function changePoints(id){const amount=prompt('Nombre de points à ajouter ou retirer (ex. 10 ou -5)');if(amount===null)return;const reason=prompt('Motif de la modification :');if(!reason)return;try{await api(`/api/admin/users/${id}/points`,{method:'PATCH',body:JSON.stringify({amount:Number(amount),reason})});toast('Points modifiés');renderUsers()}catch(e){toast(e.message)}}
 async function toggleUser(id,is_active){if(!confirm(is_active?'Réactiver ce compte ?':'Désactiver ce compte ?'))return;try{await api(`/api/admin/users/${id}/status`,{method:'PATCH',body:JSON.stringify({is_active})});toast('Statut modifié');renderUsers()}catch(e){toast(e.message)}}
