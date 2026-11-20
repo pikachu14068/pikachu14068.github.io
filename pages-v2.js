@@ -274,11 +274,15 @@
     const c = $('#pageContent');
     c.innerHTML = '<div class="card muted">Chargement admin IA…</div>';
     try {
-      const [prov, stats, settings] = await Promise.all([
+      const [prov, stats, settings, routing] = await Promise.all([
         api('/api/admin/ai/providers'),
         api('/api/admin/ai/stats?days=30'),
-        api('/api/admin/ai/settings')
+        api('/api/admin/ai/settings'),
+        api('/api/admin/ai/routing')
       ]);
+      const routes = Array.isArray(routing)
+        ? routing
+        : (routing.routes || routing.routing || routing.features || []);
       c.innerHTML = `
         <div class="section-head"><h3>Administration IA</h3><span class="tag">${stats.totals?.generations||0} générations / 30j</span></div>
         <div class="stats">
@@ -310,6 +314,51 @@
             </div>
             ${p.last_error ? `<p class="error tiny">${escapeHtml(p.last_error)}</p>` : ''}
           </div>`).join('')}
+        <div class="section-head"><h3>Routage des intelligences artificielles</h3></div>
+        <p class="tiny muted">Choisis le fournisseur utilisé pour chaque fonctionnalité de RéviSpace.</p>
+        ${(routes||[]).map(r => {
+          const labels = {
+            revision_sheet: 'Fiches de révision',
+            quiz: 'Quiz',
+            flashcards: 'Flashcards',
+            summary: 'Résumés',
+            analysis: 'Exercices et analyse',
+            assistant: 'Assistant IA'
+          };
+          return `
+            <div class="card" style="margin-bottom:12px">
+              <div class="section-head" style="margin:0">
+                <strong>${escapeHtml(labels[r.feature] || r.feature)}</strong>
+                <label class="tiny">Activé
+                  <input type="checkbox" data-route-enabled="${escapeHtml(r.feature)}" ${r.is_enabled ? 'checked' : ''}>
+                </label>
+              </div>
+              <div class="form-grid" style="margin-top:10px">
+                <label class="tiny">Mode
+                  <select class="field" data-route-mode="${escapeHtml(r.feature)}">
+                    <option value="auto" ${r.mode==='auto'?'selected':''}>Automatique</option>
+                    <option value="manual" ${r.mode==='manual'?'selected':''}>Manuel</option>
+                    <option value="hybrid" ${r.mode==='hybrid'?'selected':''}>Hybride</option>
+                  </select>
+                </label>
+                <label class="tiny">Fournisseur
+                  <select class="field" data-route-provider="${escapeHtml(r.feature)}">
+                    <option value="">Automatique / aucun</option>
+                    ${(prov.providers||[]).map(p => `
+                      <option value="${p.id}" ${String(r.provider_id||'')===String(p.id)?'selected':''}>
+                        ${escapeHtml(p.display_name)}
+                      </option>`).join('')}
+                  </select>
+                </label>
+                <label class="tiny">Modèle personnalisé
+                  <input class="field" data-route-model="${escapeHtml(r.feature)}"
+                    value="${escapeHtml(r.model||'')}" placeholder="Modèle par défaut">
+                </label>
+              </div>
+              <button class="btn primary" style="margin-top:10px"
+                data-route-save="${escapeHtml(r.feature)}">Enregistrer le routage</button>
+            </div>`;
+        }).join('')}
         <div class="card">
           <h3>Réglages globaux</h3>
           <label class="tiny">Désactivation d’urgence <input type="checkbox" id="aiEmergency" ${settings.settings?.emergency_disable===true||settings.settings?.emergency_disable==='true'?'checked':''}></label>
@@ -348,6 +397,36 @@
           } catch (e) { toast(e.message); }
         };
       });
+      c.querySelectorAll('[data-route-save]').forEach(btn => {
+        btn.onclick = async () => {
+          const feature = btn.dataset.routeSave;
+          try {
+            const mode = c.querySelector(`[data-route-mode="${feature}"]`).value;
+            const provider = c.querySelector(`[data-route-provider="${feature}"]`).value;
+            const model = c.querySelector(`[data-route-model="${feature}"]`).value.trim();
+
+            if (mode === 'manual' && !provider) {
+              toast('Sélectionne un fournisseur pour le mode manuel.');
+              return;
+            }
+
+            await api('/api/admin/ai/routing/' + encodeURIComponent(feature), {
+              method: 'PATCH',
+              body: JSON.stringify({
+                mode,
+                provider_id: provider || null,
+                model: model || null,
+                is_enabled: c.querySelector(`[data-route-enabled="${feature}"]`).checked
+              })
+            });
+
+            toast('Routage IA enregistré');
+          } catch (e) {
+            toast(e.message);
+          }
+        };
+      });
+
       $('#saveAiSettings').onclick = async () => {
         await api('/api/admin/ai/settings', {
           method: 'PATCH',
