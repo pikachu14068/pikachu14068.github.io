@@ -66,6 +66,38 @@
     } catch (e) { toast(e.message); }
   };
 
+  // ---------- Petits effets sonores (WebAudio, aucun fichier à charger) ----------
+  let actx = null;
+  function sfx(kind) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!actx) actx = new AC();
+      if (actx.state === 'suspended') actx.resume();
+      const t = actx.currentTime;
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.connect(g); g.connect(actx.destination);
+      if (kind === 'flip') {
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(480, t);
+        o.frequency.exponentialRampToValueAtTime(880, t + 0.08);
+        o.frequency.exponentialRampToValueAtTime(640, t + 0.17);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.13, t + 0.025);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.19);
+        o.start(t); o.stop(t + 0.21);
+      } else {
+        o.type = 'sine';
+        o.frequency.setValueAtTime(720, t);
+        o.frequency.exponentialRampToValueAtTime(980, t + 0.06);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.1, t + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+        o.start(t); o.stop(t + 0.11);
+      }
+    } catch (e) { /* le son est un bonus : jamais bloquant */ }
+  }
+
   let quizSessionId = null;
   window.startQuiz = async function (id) {
     currentChapter = id; quizAnswers = {};
@@ -79,10 +111,10 @@
     const c = $('#pageContent'); const y = window.scrollY;
     c.innerHTML = `<div class="section-head"><div><span class="eyebrow">ENTRAÎNEMENT</span><h3>Quiz · ${quizItems.length} questions</h3></div><span class="tag">2 points par bonne réponse</span></div>` +
       quizItems.map((q, i) => `<div class="question" style="margin-bottom:13px"><small class="eyebrow">QUESTION ${i + 1}/${quizItems.length}</small><h3>${escapeHtml(q.question)}</h3>${q.options.map((o, j) => `<button class="option ${quizAnswers[q.id] === o ? 'selected' : ''}" onclick="chooseAnswerIdx(${i},${j})">${escapeHtml(o)}</button>`).join('')}</div>`).join('') +
-      `<button class="btn primary" onclick="submitQuiz()">Terminer le quiz →</button>`;
+      `<button class="btn primary quiz-submit" onclick="submitQuiz()">Terminer le quiz →</button>`;
     window.scrollTo(0, y);
   };
-  window.chooseAnswerIdx = function (i, j) { const q = quizItems[i]; quizAnswers[q.id] = q.options[j]; renderQuiz(); };
+  window.chooseAnswerIdx = function (i, j) { const q = quizItems[i]; quizAnswers[q.id] = q.options[j]; renderQuiz(); sfx('select'); };
   window.submitQuiz = async function () {
     if (Object.keys(quizAnswers).length !== quizItems.length) { toast('Réponds à toutes les questions avant de terminer.'); return; }
     try {
@@ -108,9 +140,42 @@
   window.renderFlashcard = function () {
     const f = flashItems[flashIndex];
     $('#pageContent').innerHTML = `<div class="section-head"><div><span class="eyebrow">MÉMORISATION</span><h3>Flashcards</h3></div><span class="tag">${flashIndex + 1} / ${flashItems.length}</span></div>
-      <div class="flashcard" onclick="flipCard()"><div><small class="eyebrow">${flashBack ? 'RÉPONSE' : 'QUESTION · CLIQUE POUR RETOURNER'}</small><p><strong>${escapeHtml(flashBack ? f.back : f.front)}</strong></p></div></div>
-      <div class="row" style="justify-content:center;margin-top:16px"><button class="btn secondary" onclick="prevCard()">← Précédente</button><button class="btn primary" onclick="flipCard()">Retourner</button><button class="btn secondary" onclick="nextCard()">Suivante →</button></div>
-      <div class="row" style="justify-content:center;margin-top:10px"><button class="btn secondary" onclick="startFlashcards(${currentChapter})">↻ Recommencer (mélanger)</button></div>`;
+      <div class="flashcard ${flashBack ? 'flipped' : ''}" id="flashcard" role="button" tabindex="0" aria-label="Retourner la carte"
+           onclick="flipCard()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();flipCard();}">
+        <div class="flashcard-inner">
+          <div class="flashcard-face flashcard-front">
+            <small class="eyebrow">QUESTION</small>
+            <p>${escapeHtml(f.front)}</p>
+            <span class="flashcard-hint">↻ Clique sur la carte pour voir la réponse</span>
+          </div>
+          <div class="flashcard-face flashcard-back">
+            <small class="eyebrow">RÉPONSE</small>
+            <p>${escapeHtml(f.back)}</p>
+            <span class="flashcard-hint">↻ Clique pour revenir à la question</span>
+          </div>
+        </div>
+      </div>
+      <div class="flashcard-nav"><button class="btn secondary" onclick="prevCard()">← Précédente</button><button class="btn primary" onclick="flipCard()">Retourner</button><button class="btn secondary" onclick="nextCard()">Suivante →</button></div>
+      <div class="flashcard-nav" style="margin-top:10px"><button class="btn secondary" onclick="startFlashcards(${currentChapter})">↻ Recommencer (mélanger)</button></div>`;
+  };
+
+  // Le retournement ne redessine plus la page : la carte tourne vraiment.
+  window.flipCard = function () {
+    const card = document.getElementById('flashcard');
+    if (!card) return;
+    card.classList.toggle('flipped');
+    flashBack = card.classList.contains('flipped');
+    sfx('flip');
+  };
+  window.nextCard = function () {
+    if (!flashItems.length) return;
+    flashIndex = (flashIndex + 1) % flashItems.length; flashBack = false;
+    renderFlashcard(); sfx('select');
+  };
+  window.prevCard = function () {
+    if (!flashItems.length) return;
+    flashIndex = (flashIndex - 1 + flashItems.length) % flashItems.length; flashBack = false;
+    renderFlashcard(); sfx('select');
   };
 
   // ====================== CÔTÉ ADMIN : CONTENUS ======================
