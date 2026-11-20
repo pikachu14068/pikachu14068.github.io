@@ -1,4 +1,4 @@
-/* RéviSpace - espace admin (contenus, génération Grok, vérification) + améliorations élèves (étape 6B) */
+/* RéviSpace - espace admin (contenus, génération Groq, vérification) + améliorations élèves (étape 6B) */
 (function () {
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const notify = m => (String(m).length > 70 ? alert(m) : toast(m));
@@ -124,7 +124,7 @@
       adminData = { subjects: s.subjects, chapters: ch.chapters };
       const bySub = {}; ch.chapters.forEach(x => (bySub[x.subject_id] = bySub[x.subject_id] || []).push(x));
       c.innerHTML = `<div class="card"><h3>Nouvelle matière</h3><form id="subjectForm" class="row"><input class="field small" name="name" placeholder="Ex. Mathématiques" required><input class="field small" name="description" placeholder="Description (facultatif)"><button class="btn primary">Créer la matière</button></form></div>
-        <div class="section-head"><h3>Matières et chapitres</h3><button class="btn primary" onclick="navigate('ai')">✦ Générer un chapitre avec Grok</button></div>` +
+        <div class="section-head"><h3>Matières et chapitres</h3><button class="btn primary" onclick="navigate('ai')">✦ Générer un chapitre avec Groq</button></div>` +
         (s.subjects.length ? s.subjects.map(sub => `<div class="card" style="margin-bottom:14px"><div class="section-head" style="margin-bottom:8px"><div><h3 style="margin:0">${escapeHtml(sub.name)}</h3><small class="muted">${escapeHtml(sub.description || '')}</small></div>
           <div class="row"><button class="btn secondary" onclick="addChapter(${sub.id})">＋ Chapitre</button><button class="btn secondary" onclick="renameSubject(${sub.id})">Renommer</button><button class="btn danger" onclick="deleteSubject(${sub.id})">Supprimer</button></div></div>` +
           ((bySub[sub.id] || []).length ? (bySub[sub.id]).map(x => `<div class="chapter-row"><div><b>${escapeHtml(x.title)}</b><small>Cours ${badge(x.courses_published, x.courses_total)} Quiz ${badge(x.questions_published, x.questions_total)} Cartes ${badge(x.flashcards_published, x.flashcards_total)}</small></div>
@@ -139,22 +139,22 @@
   window.deleteChapter = safe(async id => { const x = adminData.chapters.find(v => v.id == id); if (!confirm(`Supprimer le chapitre « ${x.title} » ET tout son contenu (cours, quiz, flashcards) ? Cette action est définitive.`)) return; await api(`/api/admin/chapters/${id}`, { method: 'DELETE' }); toast('Chapitre supprimé'); renderManage(); });
   window.goGenerate = function (chapterId) { window.__genChapter = chapterId; navigate('ai'); };
 
-  // ====================== CÔTÉ ADMIN : GÉNÉRATION GROK ======================
+  // ====================== CÔTÉ ADMIN : GÉNÉRATION Groq ======================
   window.renderAI = async function () {
     const c = $('#pageContent'); c.innerHTML = '<div class="empty">Chargement…</div>';
     try {
       const [s, ch] = await Promise.all([api('/api/admin/subjects'), api('/api/admin/chapters')]);
-      $('#pageTitle').textContent = 'Générer avec Grok';
+      $('#pageTitle').textContent = 'Générer avec Groq';
       if (!s.subjects.length) { c.innerHTML = '<div class="card"><h3>Aucune matière</h3><p class="muted">Crée d’abord une matière dans « Contenus ».</p><button class="btn primary" onclick="navigate(\'manage\')">Aller aux contenus</button></div>'; return; }
       const pre = window.__genChapter ? ch.chapters.find(x => x.id == window.__genChapter) : null; window.__genChapter = null;
-      c.innerHTML = `<div class="card"><span class="eyebrow">GROK · GÉNÉRATION AUTOMATIQUE</span><h3>Générer mes révisions</h3>
-        <p class="muted">Choisis la matière et le chapitre, colle ton cours ou importe un fichier. Grok prépare un <b>brouillon</b> (fiche, quiz, flashcards, exercices) que tu vérifies avant de publier.</p>
+      c.innerHTML = `<div class="card"><span class="eyebrow">Groq · GÉNÉRATION AUTOMATIQUE</span><h3>Générer mes révisions</h3>
+        <p class="muted">Choisis la matière et le chapitre, colle ton cours ou importe un fichier. Groq prépare un <b>brouillon</b> (fiche, quiz, flashcards, exercices) que tu vérifies avant de publier.</p>
         <div class="stack"><label>Matière</label><select id="genSubject" class="field">${s.subjects.map(x => `<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('')}</select>
         <label>Chapitre</label><select id="genChapter" class="field"></select>
         <input id="genNewTitle" class="field hidden" maxlength="150" placeholder="Titre du nouveau chapitre (ex. Les fractions)">
         <label>Cours</label><textarea id="genText" class="field big" placeholder="Colle ton cours complet ici, ou importe un fichier ci-dessous…"></textarea>
         <div class="row"><input type="file" id="genFile" accept=".pdf,.docx,.txt,.md"><span id="genInfo" class="muted tiny"></span></div>
-        <button id="genBtn" class="btn primary">✦ Générer mes révisions avec Grok</button></div></div><div id="genProgress"></div>`;
+        <button id="genBtn" class="btn primary">✦ Générer mes révisions avec Groq</button></div></div><div id="genProgress"></div>`;
       const fill = (selectId) => {
         const sid = $('#genSubject').value; const list = ch.chapters.filter(x => x.subject_id == sid);
         $('#genChapter').innerHTML = list.map(x => `<option value="${x.id}">${escapeHtml(x.title)}</option>`).join('') + '<option value="new">➕ Nouveau chapitre…</option>';
@@ -260,10 +260,10 @@
         d.courses.map(x => `<details class="item" data-kind="c" data-id="${x.id}" ${x.title === 'Fiche de révision' ? 'open' : ''}><summary><b>${escapeHtml(x.title)}</b> ${pubTag(x.is_published)}</summary><input class="field c-title" value="${escapeAttr(x.title)}"><textarea class="field c-content" rows="14">${escapeHtml(x.content)}</textarea><div class="preview md card hidden"></div><div class="row"><button class="btn secondary" data-act="preview">Aperçu</button><button class="btn primary" data-act="save">Enregistrer</button><button class="btn danger" data-act="del">Supprimer</button></div></details>`).join('');
     } else if (tab === 'quiz') {
       body.innerHTML = `<p class="muted tiny">${nQ} question(s) — l'élève en reçoit 10 au hasard à chaque tentative (idéal : 50 à 100).</p><details class="newitem" data-kind="q"><summary><b>＋ Ajouter une question</b></summary>${qFields({})}<button class="btn primary" data-act="add">Ajouter</button></details>` +
-        d.questions.map((x, i) => `<details class="item" data-kind="q" data-id="${x.id}"><summary>${i + 1}. ${escapeHtml(trunc(x.question, 90))} ${pubTag(x.is_published)}</summary>${qFields(x)}<div class="row"><button class="btn primary" data-act="save">Enregistrer</button><button class="btn secondary" data-act="regen">↻ Régénérer avec Grok</button><button class="btn danger" data-act="del">Supprimer</button></div></details>`).join('');
+        d.questions.map((x, i) => `<details class="item" data-kind="q" data-id="${x.id}"><summary>${i + 1}. ${escapeHtml(trunc(x.question, 90))} ${pubTag(x.is_published)}</summary>${qFields(x)}<div class="row"><button class="btn primary" data-act="save">Enregistrer</button><button class="btn secondary" data-act="regen">↻ Régénérer avec Groq</button><button class="btn danger" data-act="del">Supprimer</button></div></details>`).join('');
     } else {
       body.innerHTML = `<p class="muted tiny">${nF} flashcard(s).</p><details class="newitem" data-kind="f"><summary><b>＋ Ajouter une flashcard</b></summary>${fFields({})}<button class="btn primary" data-act="add">Ajouter</button></details>` +
-        d.flashcards.map((x, i) => `<details class="item" data-kind="f" data-id="${x.id}"><summary>${i + 1}. ${escapeHtml(trunc(x.front, 90))} ${pubTag(x.is_published)}</summary>${fFields(x)}<div class="row"><button class="btn primary" data-act="save">Enregistrer</button><button class="btn secondary" data-act="regen">↻ Régénérer avec Grok</button><button class="btn danger" data-act="del">Supprimer</button></div></details>`).join('');
+        d.flashcards.map((x, i) => `<details class="item" data-kind="f" data-id="${x.id}"><summary>${i + 1}. ${escapeHtml(trunc(x.front, 90))} ${pubTag(x.is_published)}</summary>${fFields(x)}<div class="row"><button class="btn primary" data-act="save">Enregistrer</button><button class="btn secondary" data-act="regen">↻ Régénérer avec Groq</button><button class="btn danger" data-act="del">Supprimer</button></div></details>`).join('');
     }
     body.oninput = e => {   // garde la liste "bonne réponse" synchronisée avec les propositions
       if (!e.target.classList.contains('q-choices')) return;
@@ -278,7 +278,7 @@
       if (act === 'preview') { const p = el.querySelector('.preview'); p.innerHTML = md(el.querySelector('.c-content').value); p.classList.toggle('hidden'); return; }
       if (act === 'del') { if (!confirm('Supprimer cet élément ?')) return; await api(`/api/admin/${base}/${iid}`, { method: 'DELETE' }); toast('Supprimé'); editChapter(id, tab); return; }
       if (act === 'regen') {
-        const old = b.textContent; b.disabled = true; b.textContent = 'Grok réfléchit…';
+        const old = b.textContent; b.disabled = true; b.textContent = 'Groq réfléchit…';
         try {
           const r = await api(`/api/admin/${base}/${iid}/regenerate`, { method: 'POST', body: '{}' }); const p = r.proposal;
           if (kind === 'q') {
@@ -310,5 +310,5 @@
     toast(pub ? 'Chapitre publié ✓' : 'Chapitre dépublié'); editChapter(id);
   });
 
-  const aiNav = document.querySelector('.nav[data-page="ai"]'); if (aiNav) aiNav.innerHTML = '<span>✦</span> Générer avec Grok';
+  const aiNav = document.querySelector('.nav[data-page="ai"]'); if (aiNav) aiNav.innerHTML = '<span>✦</span> Générer avec Groq';
 })();
