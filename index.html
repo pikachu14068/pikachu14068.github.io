@@ -5,18 +5,29 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#11111b">
 <title>RéviSpace — Apprendre autrement</title>
-<link rel="icon" type="image/png" href="assets/revispace-logo.png">
-<link rel="apple-touch-icon" href="assets/revispace-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
+<script>window.REVISPACE_BUILD="2.0.0";</script>
+<script src="v2.js"></script>
+<script src="pages-v2.js"></script>
 </head>
 <body>
+<button type="button" class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div id="updateBanner" class="update-banner">
+  <strong>🚀 Une nouvelle version de RéviSpace est disponible !</strong>
+  <p class="tiny muted" style="margin:8px 0 12px">Actualise pour profiter des dernières améliorations.</p>
+  <div style="display:flex;gap:8px">
+    <button class="btn primary" data-action="refresh">Actualiser maintenant</button>
+    <button class="btn secondary" data-action="later">Plus tard</button>
+  </div>
+</div>
 <div id="toast" class="toast"></div>
 <section id="loginView" class="login-wrap">
   <div class="login-art">
-    <div class="brand"><img class="brand-mark brand-logo" src="assets/revispace-logo.png" alt="Logo RéviSpace"><span>RéviSpace</span></div>
+    <div class="brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
     <div class="hero-copy">
       <span class="eyebrow">TON ESPACE DE RÉVISION</span>
       <h1>Apprends mieux.<br><span>Progresse à ton rythme.</span></h1>
@@ -28,7 +39,7 @@
   </div>
   <div class="login-panel">
     <form id="loginForm" class="login-card">
-      <div class="mobile-brand brand"><img class="brand-mark brand-logo" src="assets/revispace-logo.png" alt="Logo RéviSpace"><span>RéviSpace</span></div>
+      <div class="mobile-brand brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
       <span class="eyebrow">BON RETOUR</span>
       <h2>Content de te revoir !</h2>
       <p class="muted">Connecte-toi pour retrouver ton espace de travail.</p>
@@ -40,7 +51,7 @@
     </form>
 
     <form id="registerForm" class="login-card hidden">
-      <div class="mobile-brand brand"><img class="brand-mark brand-logo" src="assets/revispace-logo.png" alt="Logo RéviSpace"><span>RéviSpace</span></div>
+      <div class="mobile-brand brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
       <span class="eyebrow">BIENVENUE SUR RÉVISPACE</span>
       <h2>Créer un compte</h2>
       <p class="muted">Inscris-toi pour commencer tes révisions.</p>
@@ -58,24 +69,30 @@
 </section>
 
 <div id="appView" class="app hidden">
-  <aside class="sidebar">
-    <div class="brand side-brand"><img class="brand-mark brand-logo" src="assets/revispace-logo.png" alt="Logo RéviSpace"><span>RéviSpace</span></div>
+  <aside class="sidebar" id="sidebar">
+    <button type="button" class="btn secondary" style="margin-bottom:12px;width:100%" onclick="collapseSidebar()" title="Réduire">⇄</button>
+    <div class="brand side-brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
     <div class="side-label">ESPACE</div>
     <nav id="studentNav">
-      <button class="nav active" data-page="home"><span>⌂</span> Vue d'ensemble</button>
-      <button class="nav" data-page="subjects"><span>▦</span> Mes matières</button>
-      <button class="nav" data-page="points"><span>✧</span> Mes points</button>
+      <button class="nav active" data-page="home"><span class="nav-icon">⌂</span><span>Vue d'ensemble</span></button>
+      <button class="nav" data-page="subjects"><span class="nav-icon">▦</span><span>Mes matières</span></button>
+      <button class="nav" data-page="leaderboard"><span class="nav-icon">🏆</span><span>Classement</span></button>
+      <button class="nav" data-page="mastery"><span class="nav-icon">📊</span><span>Analyse</span></button>
+      <button class="nav" data-page="calendar"><span class="nav-icon">📅</span><span>Calendrier</span></button>
+      <button class="nav" data-page="points"><span class="nav-icon">✧</span><span>Mes points</span></button>
+      <button class="nav" data-page="settings"><span class="nav-icon">⚙</span><span>Paramètres</span></button>
     </nav>
     <div id="adminNav" class="hidden">
       <div class="side-label">ADMINISTRATION</div>
       <button class="nav" data-page="admin"><span>◈</span> Tableau admin</button>
       <button class="nav" data-page="manage"><span>＋</span> Contenus</button>
       <button class="nav" data-page="users"><span>♙</span> Utilisateurs</button>
-      <button class="nav" data-page="ai"><span>✦</span> Assistant Grok</button>
+      <button class="nav" data-page="ai"><span class="nav-icon">✦</span><span>Assistant génération</span></button>
+      <button class="nav" data-page="aiadmin"><span class="nav-icon">🤖</span><span>Admin IA</span></button>
       <button class="nav" data-page="logs"><span>≡</span> Journal admin</button>
     </div>
     <div class="sidebar-bottom">
-      <div class="profile-mini"><div class="avatar" id="avatar">R</div><div class="profile-details"><b id="sideUsername">Utilisateur</b><small id="sideRole">Élève</small></div></div>
+      <div class="profile-mini"><div class="avatar" id="avatar">R</div><div><b id="sideUsername">Utilisateur</b><small id="sideRole">Élève</small></div></div>
       <button id="logoutBtn" class="logout">↪ Déconnexion</button>
     </div>
   </aside>
