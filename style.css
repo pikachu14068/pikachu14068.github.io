@@ -250,3 +250,133 @@ details.item>summary, details.newitem>summary { cursor: pointer; list-style: non
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+
+/* RéviSpace polish — logo, profil et déconnexion */
+.brand-logo {
+  display: block;
+  object-fit: cover;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.16);
+}
+.profile-mini { min-width: 0; }
+.profile-mini .profile-details {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+}
+.profile-mini .profile-details b {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+.profile-mini .profile-details small {
+  display: block;
+  margin: 0;
+  line-height: 1.25;
+  color: var(--muted);
+}
+.logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 40px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: rgba(139,108,255,.10);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+.logout:hover {
+  background: rgba(139,108,255,.22);
+  border-color: var(--purple);
+  transform: translateY(-1px);
+}
+.logout:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 2px;
+}
+.sidebar.collapsed .logout {
+  justify-content: center;
+  padding: 10px 4px;
+}
+
+
+/* ===== CORRECTIONS INTERFACE REVIsPACE ===== */
+
+.brand-logo {
+  display: block;
+  object-fit: cover;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.profile-mini .profile-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 0;
+  gap: 3px;
+}
+
+.profile-mini .profile-details b {
+  display: block;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.profile-mini .profile-details small {
+  display: block;
+  margin: 0;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+.logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 40px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: rgba(139,108,255,.12);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.logout:hover {
+  background: rgba(139,108,255,.25);
+  border-color: var(--purple);
+  transform: translateY(-1px);
+}
+
+.topbar {
+  min-height: 76px;
+  height: auto;
+  box-sizing: border-box;
+  overflow: visible;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+

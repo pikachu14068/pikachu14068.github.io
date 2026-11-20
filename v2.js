@@ -48,29 +48,52 @@
     }
   });
 
-  // Version check
-  let dismissedBuild = sessionStorage.getItem('rv_dismissed_build');
+  // Version check — mémorisation persistante
+  let activeBuild = '';
+  let dismissedBuild = localStorage.getItem('rv_dismissed_build') || '';
+
   async function checkVersion() {
     try {
       const base = (window.REVISPACE_CONFIG && window.REVISPACE_CONFIG.API_BASE) || '';
-      const r = await fetch(base + '/api/version');
+      const r = await fetch(base + '/api/version', { cache: 'no-store' });
       if (!r.ok) return;
+
       const data = await r.json();
       const build = data.build_id || data.frontend_version;
       const current = window.REVISPACE_BUILD || '2.0.0';
-      if (build && build !== current && build !== dismissedBuild) {
-        const el = document.getElementById('updateBanner');
-        if (el) {
-          el.classList.add('show');
-          el.querySelector('[data-action="refresh"]')?.addEventListener('click', () => location.reload());
-          el.querySelector('[data-action="later"]')?.addEventListener('click', () => {
-            sessionStorage.setItem('rv_dismissed_build', build);
-            el.classList.remove('show');
-          });
-        }
+
+      if (!build || build === current || build === dismissedBuild) return;
+
+      const el = document.getElementById('updateBanner');
+      if (!el) return;
+
+      activeBuild = build;
+      el.classList.add('show');
+
+      if (!el.dataset.actionsBound) {
+        el.dataset.actionsBound = '1';
+
+        el.querySelector('[data-action="refresh"]')?.addEventListener('click', () => {
+          if (activeBuild) {
+            dismissedBuild = activeBuild;
+            localStorage.setItem('rv_dismissed_build', activeBuild);
+          }
+          location.reload();
+        });
+
+        el.querySelector('[data-action="later"]')?.addEventListener('click', () => {
+          if (activeBuild) {
+            dismissedBuild = activeBuild;
+            localStorage.setItem('rv_dismissed_build', activeBuild);
+          }
+          el.classList.remove('show');
+        });
       }
-    } catch {}
+    } catch (error) {
+      console.warn('Vérification de version impossible', error);
+    }
   }
+
   setTimeout(checkVersion, 4000);
   setInterval(checkVersion, 5 * 60 * 1000);
 

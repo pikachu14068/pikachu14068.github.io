@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#11111b">
 <title>RéviSpace — Apprendre autrement</title>
+<link rel="icon" type="image/png" href="assets/revispace-logo.png">
+<link rel="apple-touch-icon" href="assets/revispace-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -27,7 +29,7 @@
 <div id="toast" class="toast"></div>
 <section id="loginView" class="login-wrap">
   <div class="login-art">
-    <div class="brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
+    <div class="brand"><img class="brand-mark brand-logo" src="assets/revispace-logo.png" alt="Logo RéviSpace"><span>RéviSpace</span></div>
     <div class="hero-copy">
       <span class="eyebrow">TON ESPACE DE RÉVISION</span>
       <h1>Apprends mieux.<br><span>Progresse à ton rythme.</span></h1>
@@ -39,7 +41,7 @@
   </div>
   <div class="login-panel">
     <form id="loginForm" class="login-card">
-      <div class="mobile-brand brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
+      <div class="mobile-brand brand"><img class="brand-mark brand-logo" src="assets/revispace-logo.png" alt="Logo RéviSpace"><span>RéviSpace</span></div>
       <span class="eyebrow">BON RETOUR</span>
       <h2>Content de te revoir !</h2>
       <p class="muted">Connecte-toi pour retrouver ton espace de travail.</p>
@@ -51,7 +53,7 @@
     </form>
 
     <form id="registerForm" class="login-card hidden">
-      <div class="mobile-brand brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
+      <div class="mobile-brand brand"><img class="brand-mark brand-logo" src="assets/revispace-logo.png" alt="Logo RéviSpace"><span>RéviSpace</span></div>
       <span class="eyebrow">BIENVENUE SUR RÉVISPACE</span>
       <h2>Créer un compte</h2>
       <p class="muted">Inscris-toi pour commencer tes révisions.</p>
@@ -71,7 +73,7 @@
 <div id="appView" class="app hidden">
   <aside class="sidebar" id="sidebar">
     <button type="button" class="btn secondary" style="margin-bottom:12px;width:100%" onclick="collapseSidebar()" title="Réduire">⇄</button>
-    <div class="brand side-brand"><span class="brand-mark">R</span><span>RéviSpace</span></div>
+    <div class="brand side-brand"><img class="brand-mark brand-logo" src="assets/revispace-logo.png" alt="Logo RéviSpace"><span>RéviSpace</span></div>
     <div class="side-label">ESPACE</div>
     <nav id="studentNav">
       <button class="nav active" data-page="home"><span class="nav-icon">⌂</span><span>Vue d'ensemble</span></button>
@@ -92,7 +94,7 @@
       <button class="nav" data-page="logs"><span>≡</span> Journal admin</button>
     </div>
     <div class="sidebar-bottom">
-      <div class="profile-mini"><div class="avatar" id="avatar">R</div><div><b id="sideUsername">Utilisateur</b><small id="sideRole">Élève</small></div></div>
+      <div class="profile-mini"><div class="avatar" id="avatar">R</div><div class="profile-details"><b id="sideUsername">Utilisateur</b><small id="sideRole">Élève</small></div></div>
       <button id="logoutBtn" class="logout">↪ Déconnexion</button>
     </div>
   </aside>
