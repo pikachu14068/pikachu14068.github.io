@@ -1,4 +1,4 @@
-/* RéviSpace - espace admin (contenus, génération Groq, vérification) + améliorations élèves (étape 6B) */
+/* RéviSpace - espace admin (contenus, génération Arena, vérification) + améliorations élèves (étape 6B) */
 (function () {
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const notify = m => (String(m).length > 70 ? alert(m) : toast(m));
@@ -124,7 +124,7 @@
       adminData = { subjects: s.subjects, chapters: ch.chapters };
       const bySub = {}; ch.chapters.forEach(x => (bySub[x.subject_id] = bySub[x.subject_id] || []).push(x));
       c.innerHTML = `<div class="card"><h3>Nouvelle matière</h3><form id="subjectForm" class="row"><input class="field small" name="name" placeholder="Ex. Mathématiques" required><input class="field small" name="description" placeholder="Description (facultatif)"><button class="btn primary">Créer la matière</button></form></div>
-        <div class="section-head"><h3>Matières et chapitres</h3><button class="btn primary" onclick="navigate('ai')">✦ Générer un chapitre avec Groq</button></div>` +
+        <div class="section-head"><h3>Matières et chapitres</h3><button class="btn primary" onclick="navigate('ai')">✦ Générer un chapitre avec Arena</button></div>` +
         (s.subjects.length ? s.subjects.map(sub => `<div class="card" style="margin-bottom:14px"><div class="section-head" style="margin-bottom:8px"><div><h3 style="margin:0">${escapeHtml(sub.name)}</h3><small class="muted">${escapeHtml(sub.description || '')}</small></div>
           <div class="row"><button class="btn secondary" onclick="addChapter(${sub.id})">＋ Chapitre</button><button class="btn secondary" onclick="renameSubject(${sub.id})">Renommer</button><button class="btn danger" onclick="deleteSubject(${sub.id})">Supprimer</button></div></div>` +
           ((bySub[sub.id] || []).length ? (bySub[sub.id]).map(x => `<div class="chapter-row"><div><b>${escapeHtml(x.title)}</b><small>Cours ${badge(x.courses_published, x.courses_total)} Quiz ${badge(x.questions_published, x.questions_total)} Cartes ${badge(x.flashcards_published, x.flashcards_total)}</small></div>
@@ -139,22 +139,33 @@
   window.deleteChapter = safe(async id => { const x = adminData.chapters.find(v => v.id == id); if (!confirm(`Supprimer le chapitre « ${x.title} » ET tout son contenu (cours, quiz, flashcards) ? Cette action est définitive.`)) return; await api(`/api/admin/chapters/${id}`, { method: 'DELETE' }); toast('Chapitre supprimé'); renderManage(); });
   window.goGenerate = function (chapterId) { window.__genChapter = chapterId; navigate('ai'); };
 
-  // ====================== CÔTÉ ADMIN : GÉNÉRATION Groq ======================
+  // ====================== CÔTÉ ADMIN : GÉNÉRATION Arena ======================
   window.renderAI = async function () {
     const c = $('#pageContent'); c.innerHTML = '<div class="empty">Chargement…</div>';
     try {
       const [s, ch] = await Promise.all([api('/api/admin/subjects'), api('/api/admin/chapters')]);
-      $('#pageTitle').textContent = 'Générer avec Groq';
+      $('#pageTitle').textContent = 'Importer depuis une IA';
       if (!s.subjects.length) { c.innerHTML = '<div class="card"><h3>Aucune matière</h3><p class="muted">Crée d’abord une matière dans « Contenus ».</p><button class="btn primary" onclick="navigate(\'manage\')">Aller aux contenus</button></div>'; return; }
       const pre = window.__genChapter ? ch.chapters.find(x => x.id == window.__genChapter) : null; window.__genChapter = null;
-      c.innerHTML = `<div class="card"><span class="eyebrow">Groq · GÉNÉRATION AUTOMATIQUE</span><h3>Générer mes révisions</h3>
-        <p class="muted">Choisis la matière et le chapitre, colle ton cours ou importe un fichier. Groq prépare un <b>brouillon</b> (fiche, quiz, flashcards, exercices) que tu vérifies avant de publier.</p>
+      c.innerHTML = `<div class="card"><span class="eyebrow">SANS API · IMPORT DEPUIS UNE IA</span><h3>Générer mes révisions avec une IA de chat</h3>
+        <p class="muted">1) Choisis le chapitre et colle ton cours. 2) Copie le prompt et colle-le dans ChatGPT, Claude, Gemini… 3) Colle ici sa réponse : le site trie tout (quiz, flashcards, exercices, fiche) et l'enregistre en <b>brouillon</b> à vérifier.</p>
         <div class="stack"><label>Matière</label><select id="genSubject" class="field">${s.subjects.map(x => `<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('')}</select>
         <label>Chapitre</label><select id="genChapter" class="field"></select>
         <input id="genNewTitle" class="field hidden" maxlength="150" placeholder="Titre du nouveau chapitre (ex. Les fractions)">
         <label>Cours</label><textarea id="genText" class="field big" placeholder="Colle ton cours complet ici, ou importe un fichier ci-dessous…"></textarea>
         <div class="row"><input type="file" id="genFile" accept=".pdf,.docx,.txt,.md"><span id="genInfo" class="muted tiny"></span></div>
-        <button id="genBtn" class="btn primary">✦ Générer mes révisions avec Groq</button></div></div><div id="genProgress"></div>`;
+        <label>Étape 1 : combien d'éléments veux-tu ?</label>
+        <div class="row" style="gap:10px;flex-wrap:wrap"><label class="tiny muted">Questions <input id="impNq" class="field" type="number" min="0" max="200" value="30" style="width:90px"></label>
+          <label class="tiny muted">Flashcards <input id="impNf" class="field" type="number" min="0" max="200" value="25" style="width:90px"></label>
+          <label class="tiny muted">Exercices <input id="impNe" class="field" type="number" min="0" max="50" value="8" style="width:90px"></label></div>
+        <button id="impCopy" class="btn primary">📋 Copier le prompt</button><span id="impCopyInfo" class="muted tiny"></span>
+        <textarea id="impPrompt" class="field hidden" rows="6" readonly></textarea>
+        <label>Étape 2 : colle ici la réponse de l'IA</label>
+        <textarea id="impAnswer" class="field big" placeholder="Colle la réponse complète. Si l'IA a été coupée, écris-lui « continue » et colle aussi la suite à la suite."></textarea>
+        <div class="row" style="gap:10px"><button id="impCheck" class="btn">🔍 Analyser</button><button id="impSave" class="btn primary" disabled>Enregistrer en brouillons</button></div>
+        <div id="impResult"></div>
+        <details style="margin-top:12px"><summary class="muted tiny">Génération automatique par API (optionnel, nécessite une clé)</summary>
+        <button id="genBtn" class="btn">✦ Générer avec l'API</button></details></div></div><div id="genProgress"></div>`;
       const fill = (selectId) => {
         const sid = $('#genSubject').value; const list = ch.chapters.filter(x => x.subject_id == sid);
         $('#genChapter').innerHTML = list.map(x => `<option value="${x.id}">${escapeHtml(x.title)}</option>`).join('') + '<option value="new">➕ Nouveau chapitre…</option>';
@@ -187,6 +198,66 @@
         e.target.value = '';
       };
 
+      // ---------- Import depuis une IA de chat (sans API) ----------
+      const impPrompt = () => {
+        const nq = Number($('#impNq').value) || 0, nf = Number($('#impNf').value) || 0, ne = Number($('#impNe').value) || 0;
+        const title = $('#genChapter').value === 'new' ? ($('#genNewTitle').value.trim() || 'Chapitre') : ($('#genChapter').selectedOptions[0]?.textContent || 'Chapitre');
+        return `Tu es un professeur expérimenté qui prépare des révisions pour des élèves.
+Chapitre : « ${title} ».
+Règles : tu t'appuies UNIQUEMENT sur le cours ci-dessous. N'invente aucune information, date ou formule absente du texte. Écris en français.
+
+Produis :
+- une fiche de révision en Markdown (sections : Résumé général, Définitions importantes, Formules, Notions à retenir, Exemples, Méthodes, Erreurs fréquentes, Récapitulatif),
+- ${nq} questions à choix multiples (4 propositions plausibles, une seule bonne réponse, "correct_answer" = copie EXACTE de la bonne proposition, difficultés variées, sans doublon),
+- ${nf} flashcards (définitions, formules, dates, vocabulaire),
+- ${ne} exercices d'application corrigés étape par étape (du plus facile au plus difficile),
+- des notions importantes, du vocabulaire et des méthodes à mémoriser.
+
+FORMAT DE RÉPONSE OBLIGATOIRE : uniquement un objet JSON valide dans un seul bloc de code, sans aucun texte autour :
+{"fiche_markdown":"...","notions":["..."],"vocabulary":[{"term":"...","definition":"..."}],"methods":["..."],"flashcards":[{"front":"...","back":"..."}],"questions":[{"question":"...","choices":["...","...","...","..."],"correct_answer":"...","explanation":"...","difficulty":"facile|moyen|difficile"}],"exercises":[{"statement":"...","solution":"...","difficulty":"facile|moyen|difficile"}]}
+Si ta réponse est coupée, je t'écrirai « continue » : tu enverras alors un NOUVEL objet JSON complet avec uniquement les éléments pas encore donnés.
+
+COURS :
+"""
+${$('#genText').value.trim()}
+"""`;
+      };
+      $('#impCopy').onclick = async () => {
+        if ($('#genText').value.trim().length < 200) { notify('Colle d’abord ton cours (200 caractères minimum).'); return; }
+        const p = impPrompt(), info = $('#impCopyInfo');
+        try { await navigator.clipboard.writeText(p); info.textContent = ' Prompt copié ! Colle-le dans ton IA de chat.'; }
+        catch { const t = $('#impPrompt'); t.value = p; t.classList.remove('hidden'); t.select(); info.textContent = ' Copie automatique impossible : le prompt est affiché ci-dessous, copie-le (Ctrl+A puis Ctrl+C).'; }
+      };
+      let impOk = false;
+      $('#impAnswer').oninput = () => { impOk = false; $('#impSave').disabled = true; };
+      const impSend = async save => {
+        const body = { answer: $('#impAnswer').value, course_text: $('#genText').value, save };
+        if ($('#genChapter').value !== 'new') body.chapter_id = Number($('#genChapter').value);
+        if (save && !body.chapter_id) {
+          const title = $('#genNewTitle').value.trim(); if (!title) throw new Error('Donne un titre au nouveau chapitre.');
+          const r = await api('/api/admin/chapters', { method: 'POST', body: JSON.stringify({ subject_id: Number($('#genSubject').value), title, description: '' }) });
+          body.chapter_id = r.chapter.id;
+        }
+        const d = await api('/api/admin/import-ai', { method: 'POST', body: JSON.stringify(body) });
+        return { d, chapterId: body.chapter_id };
+      };
+      const impLine = c => `<ul><li><b>${c.questions}</b> question${c.questions > 1 ? 's' : ''} de quiz</li><li><b>${c.flashcards}</b> flashcard${c.flashcards > 1 ? 's' : ''}</li><li><b>${c.exercises}</b> exercice${c.exercises > 1 ? 's' : ''}</li><li>Sections de cours : ${c.sections.length ? escapeHtml(c.sections.join(', ')) : 'aucune'}</li>${c.skipped ? `<li class="muted">${c.skipped} élément(s) ignoré(s) (invalides ou doublons)</li>` : ''}</ul>`;
+      $('#impCheck').onclick = safe(async () => {
+        const box = $('#impResult');
+        if (!$('#impAnswer').value.trim()) { notify('Colle d’abord la réponse de l’IA.'); return; }
+        try { const { d } = await impSend(false); impOk = true; $('#impSave').disabled = false;
+          box.innerHTML = `<div class="ok-box"><b>Détecté dans la réponse :</b>${impLine(d.counts)}Si ça te convient, clique sur « Enregistrer en brouillons ».</div>`; }
+        catch (err) { impOk = false; $('#impSave').disabled = true; box.innerHTML = `<p class="error">${escapeHtml(err.message)}</p>`; }
+      });
+      $('#impSave').onclick = safe(async () => {
+        if (!impOk) return;
+        const box = $('#impResult'); $('#impSave').disabled = true;
+        try { const { d, chapterId } = await impSend(true);
+          box.innerHTML = `<div class="ok-box"><b>Enregistré en brouillons :</b>${impLine(d.counts)}Tout est <b>privé</b> : vérifie puis publie.</div><button class="btn primary" onclick="editChapter(${chapterId})">Vérifier et publier →</button>`;
+          $('#impAnswer').value = ''; }
+        catch (err) { $('#impSave').disabled = false; box.innerHTML = `<p class="error">${escapeHtml(err.message)}</p>`; }
+      });
+
       $('#genBtn').onclick = safe(async () => {
         const text = $('#genText').value.trim();
         if (text.length < 200) { notify('Le cours est trop court (200 caractères minimum).'); return; }
@@ -216,19 +287,26 @@
       let job;
       try { job = (await api(`/api/admin/generate/${jobId}`)).job; fails = 0; }
       catch (e) { if (++fails > 5) throw e; await sleep(3000); continue; }
-      let pct = job.chunks_total ? Math.round((job.chunks_done / job.chunks_total) * 80) : 3;
-      if (/Rédaction/.test(job.step)) pct = 85; if (/Enregistrement/.test(job.step)) pct = 95;
+      let pct = job.pct != null ? job.pct : 3;
       const finished = ['done', 'partial', 'failed'].includes(job.status);
       if (job.status === 'done' || job.status === 'partial') pct = 100;
+      const fmt = s => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), r = s % 60; return h ? `${h} h ${String(m).padStart(2, '0')} min` : m ? `${m} min ${String(r).padStart(2, '0')} s` : `${r} s`; };
+      const paused = job.status === 'paused';
       const errs = (job.errors || []).map(x => `<li>${escapeHtml(x)}</li>`).join('');
       box.innerHTML = `<div class="card" style="margin-top:14px"><span class="eyebrow">PROGRESSION</span><h3>${escapeHtml(job.step || 'En attente…')}</h3>
-        <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div><p class="muted tiny">${pct}%${job.chunks_total ? ` · partie ${job.chunks_done}/${job.chunks_total}` : ''} — ne ferme pas cette page, la génération peut prendre plusieurs minutes.</p>
+        <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div><p class="muted tiny">${pct}%${job.chunks_total ? ` · partie ${job.chunks_done}/${job.chunks_total}` : ''}${!finished ? ` · temps restant estimé : <b class="gen-eta">${fmt(job.eta_seconds)}</b>` : ''}</p>
+        ${paused ? `<p class="warn-box">⏸ Quota Arena atteint. Tout est sauvegardé, la génération reprend automatiquement dans <b class="gen-pause">${fmt(job.pause_seconds)}</b>. Tu peux fermer cette page, ça continue sur le serveur.</p>` : (!finished ? '<p class="muted tiny">La génération continue sur le serveur, tu peux fermer cette page.</p>' : '')}
         ${errs ? `<ul class="error-list">${errs}</ul>` : ''}
         ${job.status === 'done' ? `<p class="ok-box">Terminé : ${job.counts.questions} questions, ${job.counts.flashcards} flashcards, ${job.counts.courses} sections de cours. Tout est en <b>brouillon</b> : vérifie puis publie.</p><button class="btn primary" onclick="editChapter(${chapterId})">Vérifier et publier →</button>` : ''}
         ${job.status === 'partial' ? `<p class="warn-box">Terminé avec des erreurs (ci-dessus) : ${job.counts.questions} questions, ${job.counts.flashcards} flashcards. Certaines parties manquent peut-être. Vérifie le résultat ou relance la génération.</p><button class="btn primary" onclick="editChapter(${chapterId})">Vérifier le brouillon →</button>` : ''}
         ${job.status === 'failed' ? '<p class="error">La génération a échoué. Ton texte est toujours dans la zone ci-dessus : tu peux relancer.</p>' : ''}</div>`;
       if (finished) return;
-      await sleep(3000);
+      let eta = job.eta_seconds || 0, pz = job.pause_seconds || 0;
+      for (let i = 0; i < 3; i++) {
+        await sleep(1000); eta = Math.max(0, eta - 1); pz = Math.max(0, pz - 1);
+        const a = box.querySelector('.gen-eta'), b = box.querySelector('.gen-pause');
+        if (a) a.textContent = fmt(eta); if (b) b.textContent = fmt(pz);
+      }
     }
   }
 
@@ -260,10 +338,10 @@
         d.courses.map(x => `<details class="item" data-kind="c" data-id="${x.id}" ${x.title === 'Fiche de révision' ? 'open' : ''}><summary><b>${escapeHtml(x.title)}</b> ${pubTag(x.is_published)}</summary><input class="field c-title" value="${escapeAttr(x.title)}"><textarea class="field c-content" rows="14">${escapeHtml(x.content)}</textarea><div class="preview md card hidden"></div><div class="row"><button class="btn secondary" data-act="preview">Aperçu</button><button class="btn primary" data-act="save">Enregistrer</button><button class="btn danger" data-act="del">Supprimer</button></div></details>`).join('');
     } else if (tab === 'quiz') {
       body.innerHTML = `<p class="muted tiny">${nQ} question(s) — l'élève en reçoit 10 au hasard à chaque tentative (idéal : 50 à 100).</p><details class="newitem" data-kind="q"><summary><b>＋ Ajouter une question</b></summary>${qFields({})}<button class="btn primary" data-act="add">Ajouter</button></details>` +
-        d.questions.map((x, i) => `<details class="item" data-kind="q" data-id="${x.id}"><summary>${i + 1}. ${escapeHtml(trunc(x.question, 90))} ${pubTag(x.is_published)}</summary>${qFields(x)}<div class="row"><button class="btn primary" data-act="save">Enregistrer</button><button class="btn secondary" data-act="regen">↻ Régénérer avec Groq</button><button class="btn danger" data-act="del">Supprimer</button></div></details>`).join('');
+        d.questions.map((x, i) => `<details class="item" data-kind="q" data-id="${x.id}"><summary>${i + 1}. ${escapeHtml(trunc(x.question, 90))} ${pubTag(x.is_published)}</summary>${qFields(x)}<div class="row"><button class="btn primary" data-act="save">Enregistrer</button><button class="btn secondary" data-act="regen">↻ Régénérer avec Arena</button><button class="btn danger" data-act="del">Supprimer</button></div></details>`).join('');
     } else {
       body.innerHTML = `<p class="muted tiny">${nF} flashcard(s).</p><details class="newitem" data-kind="f"><summary><b>＋ Ajouter une flashcard</b></summary>${fFields({})}<button class="btn primary" data-act="add">Ajouter</button></details>` +
-        d.flashcards.map((x, i) => `<details class="item" data-kind="f" data-id="${x.id}"><summary>${i + 1}. ${escapeHtml(trunc(x.front, 90))} ${pubTag(x.is_published)}</summary>${fFields(x)}<div class="row"><button class="btn primary" data-act="save">Enregistrer</button><button class="btn secondary" data-act="regen">↻ Régénérer avec Groq</button><button class="btn danger" data-act="del">Supprimer</button></div></details>`).join('');
+        d.flashcards.map((x, i) => `<details class="item" data-kind="f" data-id="${x.id}"><summary>${i + 1}. ${escapeHtml(trunc(x.front, 90))} ${pubTag(x.is_published)}</summary>${fFields(x)}<div class="row"><button class="btn primary" data-act="save">Enregistrer</button><button class="btn secondary" data-act="regen">↻ Régénérer avec Arena</button><button class="btn danger" data-act="del">Supprimer</button></div></details>`).join('');
     }
     body.oninput = e => {   // garde la liste "bonne réponse" synchronisée avec les propositions
       if (!e.target.classList.contains('q-choices')) return;
@@ -278,7 +356,7 @@
       if (act === 'preview') { const p = el.querySelector('.preview'); p.innerHTML = md(el.querySelector('.c-content').value); p.classList.toggle('hidden'); return; }
       if (act === 'del') { if (!confirm('Supprimer cet élément ?')) return; await api(`/api/admin/${base}/${iid}`, { method: 'DELETE' }); toast('Supprimé'); editChapter(id, tab); return; }
       if (act === 'regen') {
-        const old = b.textContent; b.disabled = true; b.textContent = 'Groq réfléchit…';
+        const old = b.textContent; b.disabled = true; b.textContent = 'Arena réfléchit…';
         try {
           const r = await api(`/api/admin/${base}/${iid}/regenerate`, { method: 'POST', body: '{}' }); const p = r.proposal;
           if (kind === 'q') {
@@ -310,5 +388,5 @@
     toast(pub ? 'Chapitre publié ✓' : 'Chapitre dépublié'); editChapter(id);
   });
 
-  const aiNav = document.querySelector('.nav[data-page="ai"]'); if (aiNav) aiNav.innerHTML = '<span>✦</span> Générer avec Groq';
+  const aiNav = document.querySelector('.nav[data-page="ai"]'); if (aiNav) aiNav.innerHTML = '<span>✦</span> Importer depuis une IA';
 })();

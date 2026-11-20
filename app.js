@@ -79,7 +79,7 @@ $('#logoutBtn').addEventListener('click',()=>logout());
 
 function navigate(page){
   document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
-  const titles={home:'Vue d’ensemble',subjects:'Mes matières',points:'Mes points',admin:'Tableau administrateur',manage:'Gestion des contenus',users:'Utilisateurs',ai:'Assistant Groq',logs:'Journal administrateur'};
+  const titles={home:'Vue d’ensemble',subjects:'Mes matières',points:'Mes points',admin:'Tableau administrateur',manage:'Gestion des contenus',users:'Utilisateurs',ai:'Assistant Arena',logs:'Journal administrateur'};
   $('#pageTitle').textContent=titles[page]||'RéviSpace';
   if(page==='home') renderHome();
   else if(page==='subjects') renderSubjects();
@@ -208,7 +208,7 @@ async function renderPoints(){
   }
 }
 async function renderAdmin(){
-  const c=$('#pageContent');try{const d=await api('/api/admin/overview');c.innerHTML=`<div class="welcome"><span class="eyebrow">ESPACE ADMINISTRATEUR</span><h2>Centre de contrôle</h2><p>Gère les contenus et accompagne les élèves depuis un seul endroit.</p></div><div class="stats"><div class="stat"><small>Utilisateurs</small><strong>${d.users}</strong></div><div class="stat"><small>Matières</small><strong>${d.subjects}</strong></div><div class="stat"><small>Questions</small><strong>${d.questions}</strong></div><div class="stat"><small>En ligne récemment</small><strong>${d.online}</strong></div></div><div class="grid"><div class="card"><h3>📚 Contenus</h3><p class="muted">Ajoute matières, chapitres, cours et exercices.</p><button class="btn secondary" onclick="navigate('manage')">Gérer les contenus</button></div><div class="card"><h3>♙ Utilisateurs</h3><p class="muted">Crée des comptes et ajuste les points.</p><button class="btn secondary" onclick="navigate('users')">Gérer les comptes</button></div><div class="card"><h3>✦ Assistant Groq</h3><p class="muted">Génère des brouillons de quiz et flashcards.</p><button class="btn secondary" onclick="navigate('ai')">Ouvrir l’assistant</button></div></div>`}catch(e){c.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`}
+  const c=$('#pageContent');try{const d=await api('/api/admin/overview');c.innerHTML=`<div class="welcome"><span class="eyebrow">ESPACE ADMINISTRATEUR</span><h2>Centre de contrôle</h2><p>Gère les contenus et accompagne les élèves depuis un seul endroit.</p></div><div class="stats"><div class="stat"><small>Utilisateurs</small><strong>${d.users}</strong></div><div class="stat"><small>Matières</small><strong>${d.subjects}</strong></div><div class="stat"><small>Questions</small><strong>${d.questions}</strong></div><div class="stat"><small>En ligne récemment</small><strong>${d.online}</strong></div></div><div class="grid"><div class="card"><h3>📚 Contenus</h3><p class="muted">Ajoute matières, chapitres, cours et exercices.</p><button class="btn secondary" onclick="navigate('manage')">Gérer les contenus</button></div><div class="card"><h3>♙ Utilisateurs</h3><p class="muted">Crée des comptes et ajuste les points.</p><button class="btn secondary" onclick="navigate('users')">Gérer les comptes</button></div><div class="card"><h3>✦ Assistant Arena</h3><p class="muted">Génère des brouillons de quiz et flashcards.</p><button class="btn secondary" onclick="navigate('ai')">Ouvrir l’assistant</button></div></div>`}catch(e){c.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`}
 }
 async function renderManage(){
   const c=$('#pageContent');try{const d=await api('/api/subjects');subjectsCache=d.subjects;
@@ -346,16 +346,16 @@ async function changePoints(id){const amount=prompt('Nombre de points à ajouter
 async function toggleUser(id,is_active){if(!confirm(is_active?'Réactiver ce compte ?':'Désactiver ce compte ?'))return;try{await api(`/api/admin/users/${id}/status`,{method:'PATCH',body:JSON.stringify({is_active})});toast('Statut modifié');renderUsers()}catch(e){toast(e.message)}}
 async function renderAI(){
   const c=$('#pageContent');
-  c.innerHTML=`<div class="card"><span class="eyebrow">GROQ · IMPORT ET GÉNÉRATION</span><h3>Importer un cours et générer les révisions</h3><p class="muted">Les contenus générés sont privés et restent en brouillon jusqu'à leur validation par un administrateur.</p>
+  c.innerHTML=`<div class="card"><span class="eyebrow">ARENA · IMPORT ET GÉNÉRATION</span><h3>Importer un cours et générer les révisions</h3><p class="muted">Les contenus générés sont privés et restent en brouillon jusqu'à leur validation par un administrateur.</p>
   <form id="genForm" class="stack">
     <label>Matière<select class="field" id="genSubject" required></select></label>
     <label>Chapitre existant<select class="field" id="genChapter"></select></label>
     <details><summary>Créer un nouveau chapitre</summary><div class="stack"><input class="field" id="newChapterTitle" placeholder="Titre du chapitre"><input class="field" id="newChapterDescription" placeholder="Description (facultative)"><button class="btn secondary" type="button" id="createChapter">Créer le chapitre</button></div></details>
     <label>Importer un document (PDF texte, DOCX, TXT, MD)</label><input class="field" id="genFile" type="file" accept=".pdf,.docx,.txt,.md,.png,.jpg,.jpeg,.webp">
     <label>Ou coller directement le contenu du cours</label><textarea class="field" id="genText" rows="10" placeholder="Colle ici le cours source (200 caractères minimum)"></textarea>
-    <button class="btn primary" type="submit">Envoyer à Groq et créer les brouillons</button>
+    <button class="btn primary" type="submit">Envoyer à Arena et créer les brouillons</button>
   </form><div id="genResult" aria-live="polite"></div></div>
-  <div class="card"><h3>Assistant de propositions rapides</h3><form id="aiForm" class="stack"><select class="field" name="type"><option value="questions">Questions de quiz</option><option value="flashcards">Flashcards</option></select><input class="field" name="topic" placeholder="Sujet" required><input class="field" name="count" type="number" min="1" max="20" value="10"><button class="btn secondary">Générer avec Groq</button></form><div id="aiResult"></div></div>`;
+  <div class="card"><h3>Assistant de propositions rapides</h3><form id="aiForm" class="stack"><select class="field" name="type"><option value="questions">Questions de quiz</option><option value="flashcards">Flashcards</option></select><input class="field" name="topic" placeholder="Sujet" required><input class="field" name="count" type="number" min="1" max="20" value="10"><button class="btn secondary">Générer avec Arena</button></form><div id="aiResult"></div></div>`;
   const subjects=await api('/api/subjects'); const subjectSel=$('#genSubject');
   subjectSel.innerHTML=subjects.subjects.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
   async function loadChapters(){const id=subjectSel.value;if(!id)return;const d=await api(`/api/subjects/${id}/chapters`);$('#genChapter').innerHTML=d.chapters.map(x=>`<option value="${x.id}">${escapeHtml(x.title)}</option>`).join('');}
